@@ -1,24 +1,22 @@
 pipeline {
-  agent any                        // Run on any Jenkins worker
-
-  tools {
-    maven 'mvn-default'            // Use the Maven tool set up in Jenkins
-  }
-
+  agent any
   stages {
     stage('Checkout') {
-      steps {
-        checkout scm               // Get code from the Git repo
-      }
+      steps { checkout scm }
     }
     stage('Build') {
       steps {
-        sh 'mvn -B clean package'   // Compile and package into a JAR
+        sh 'mvn -v'
+        sh 'mvn -B -DskipTests clean package'
       }
     }
     stage('Test') {
+      steps { sh 'mvn -B test' }
+    }
+    stage('Archive') {
       steps {
-        sh 'mvn -B test'            // Run the unit tests
+        junit 'target/surefire-reports/*.xml'
+        archiveArtifacts artifacts: 'target/*.jar', fingerprint: true
       }
     }
   }
